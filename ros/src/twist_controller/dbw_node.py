@@ -80,7 +80,7 @@ class DBWNode(object):
             # if <dbw is enabled>:
             #   self.publish(throttle, brake, steer)
             if not None in (self.current _vel, self. linear_vel, self.angular_vel):
-                self. throttle, selr.brake, self.steering = seif. cont rouler. control (self. current_vel, self.dbw enabled, self. linear_vel, self.angular_vel)
+                self. throttle, self.brake, self.steering = seif.controller.control(self.current_vel, self.dbw enabled, self.linear_vel, self.angular_vel)
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
