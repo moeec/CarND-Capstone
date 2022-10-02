@@ -52,11 +52,18 @@ class DBWNode(object):
                                             ThrottleCmd, queue_size=1)
         self.brake_pub = rospy.Publisher('/vehicle/brake_cmd',
                                          BrakeCmd, queue_size=1)
+        
+        # Get TimeSTampe from prvious run.
+        self.previous_timestamp = rospy.get_time()
+        self.current_velocity = None
 
         # TODO: Create `Controller` object
-        # self.controller = Controller(<Arguments you wish to provide>)
+        self.controller = Controller(<Arguments you wish to provide>)
 
         # TODO: Subscribe to all the topics you need to
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size=5)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=5)
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size=1)
 
         self.loop()
 
@@ -72,6 +79,8 @@ class DBWNode(object):
             #                                                     <any other argument you need>)
             # if <dbw is enabled>:
             #   self.publish(throttle, brake, steer)
+            if not None in (self.current _vel, self. linear_vel, self.angular_vel):
+                self. throttle, selr.brake, self.steering = seif. cont rouler. control (self. current_vel, self.dbw enabled, self. linear_vel, self.angular_vel)
             rate.sleep()
 
     def publish(self, throttle, brake, steer):
