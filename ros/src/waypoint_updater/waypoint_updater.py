@@ -1,68 +1,6 @@
 #!/usr/bin/env python
 
 import rospy
-from geometry_msgs.msg import PoseStamped
-from styx_msgs.msg import Lane, Waypoint
-
-import math
-
-'''
-This node will publish waypoints from the car's current position to some `x` distance ahead.
-
-As mentioned in the doc, you should ideally first implement a version which does not care
-about traffic lights or obstacles.
-
-Once you have created dbw_node, you will update this node to use the status of traffic lights too.
-
-Please note that our simulator also provides the exact location of traffic lights and their
-current status in `/vehicle/traffic_lights` message. You can use this message to build this node
-as well as to verify your TL classifier.
-
-TODO (for Yousuf and Aaron): Stopline location for each traffic light.
-'''
-
-LOOKAHEAD_WPS = 200 # Number of waypoints we will publish. You can change this number
-
-
-class WaypointUpdater(object):
-    def __init__(self):
-        rospy.init_node('waypoint_updater')
-
-        rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb)
-        rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb)
-
-        # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below
-        
-        rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb)
-        rospy.Subscriber('/obstacle_waypoint', Lane, self.waypoint_cb)
-        rospy.Subscriber('/current_pose', CurrPose self.pose_cb)
-
-
-        self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
-
-        # TODO: Add other member variables you need below
-        
-        self.waypoints = None # used to read in waypoints
-        self.red_light_ahead = False 
-        self.curr_pose = None # used to sore the current position 
-        self.max_velocity = 1 # this is in m/s and is set to 1 m/s initially.
-
-        rospy.spin()
-
-    def pose_cb(self, msg):
-        # TODO: Implement
-        self.curr_pose = msg.pose
-        if self.waypoints is not None:                
-        self.publish()
-        
-        pass
-
-    def waypoints_cb(self, waypoints):
-        # TODO: Implement
-        
-#!/usr/bin/env python
-
-import rospy
 import math
 import tf
 from geometry_msgs.msg import PoseStamped
@@ -106,20 +44,15 @@ class WaypointUpdater(object):
 
         self.final_waypoints_pub = rospy.Publisher('final_waypoints', Lane, queue_size=1)
         self.loop
-        #self.cur_pose = None
-        #self.waypoints = None  
-        #self.red_light_waypoint = None      
-        #self.waypoints = None
 
-        #rospy.spin()
     def loop(self):
         rate = rospy.Rate (50)
-        while not rospy.is shutdown ():
+        while not rospy.is_shutdown():
             If self.pose and self.base_lane:
                 self.publish_waypoints()
             rate.sleep ()
     
-    def get_closest waypoint_1dx(self):
+    def get_closest_waypoint_1dx(self):
         x = self.pose.pose.position.x
         y = self.pose.pose.position.y
         closest_1dx = self.waypoint_tree.query ([x, y], 1)[1]
@@ -137,7 +70,7 @@ class WaypointUpdater(object):
         
         If val > 0:
             closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
-       return closest_idx      
+        return closest_idx      
             
     def publish_waypoints(self):
         final_lane - self.generate_lane()
@@ -169,6 +102,7 @@ class WaypointUpdater(object):
             vel = math.sqrt(2*MAX_DECEL*dist)
             if vel <1.:
                 vel = 0.
+                
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
             temp.append (p)
             
@@ -180,7 +114,7 @@ class WaypointUpdater(object):
     def waypoints_cb(self, waypoints):
         self.base_lane = waypoints
         if not self.waypoints_2d:
-            self.waypoints_2d = [[waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]
+            self.waypoints_2d = [[waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]       
             self.waypoint_tree = KDTree(self.waypoints_2d)
                                  
 
