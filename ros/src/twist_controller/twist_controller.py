@@ -13,7 +13,7 @@ ONE_MPH = 0.44704
 class Controller(object):
     def __init__(self, vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle):
         # TODO: Implement
-        self.yaw controller = YawController (wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
+        self.yaw_controller = YawController (wheel_base, steer_ratio, 0.1, max_lat_accel, max_steer_angle)
         
         
         kp = 0.3
@@ -26,12 +26,12 @@ class Controller(object):
         tau = 0.5 # 1/(2pi*tau) = cutoff frequency
         ts = .02 # Sample time
         self.vel_lpf = LowPassFilter(tau, ts)
-        self.vehicle_mass = LowPassFilter(tau, ts)fuel capacity
-        self.fuel_capacity = fuel capacity
-        self.brake deadband = brake deadband
-        self.decel limit = decel limit
-        self.accel limit = accel limit
-        self.wheel radius = wheel radius
+        self.vehicle_mass = LowPassFilter(tau, ts)fuel_capacity
+        self.fuel_capacity = fuel_capacity
+        self.brake deadband = brake_deadband
+        self.decel limit = decel_limit
+        self.accel limit = accel_limit
+        self.wheel radius = wheel_radius
         
         self.last_time = rospy.get_time()
 
@@ -48,7 +48,7 @@ class Controller(object):
         steering = self.yaw controller.get_steering (linear_vel, angular_vel, current_vel)
         
         vel_error = linear_vel - current_vel
-        self.last vel = current_vel
+        self.last_vel = current_vel
         
         current_time = rospy.get_time()
         sample_time = current_time - self.last_time
