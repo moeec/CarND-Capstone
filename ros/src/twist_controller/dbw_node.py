@@ -53,18 +53,9 @@ class DBWNode(object):
         self.brake_pub = rospy.Publisher('/vehicle/brake_cmd',
                                          BrakeCmd, queue_size=1)
         
-        # Get TimeSTampe from prvious run.
+        # Get TimeStamp from previous run.
         self.previous_timestamp = rospy.get_time()
         self.current_velocity = None
-
-        # TODO: Create `Controller` object
-        self.controller = Controller(vehicle_mass, fuel_capacity, brake_deadband, decel_limit, **accel_limit, **wheel_radius, **wheel_base, **steer_ratio, **max_lat_accel, **max_steer_angle)
-                
-
-        # TODO: Subscribe to all the topics you need to
-        rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size=5)
-        rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=5)
-        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size=1)
         
         self.current_vel = None
         self.curr_ang_vel = None
@@ -72,6 +63,17 @@ class DBWNode(object):
         self.linear_vel = None
         self.angular_vel = None
         self.throttle = self.steering = self.brake = 0
+
+        # TODO: Create `Controller` object
+        self.controller = Controller(vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle)
+                
+
+        # TODO: Subscribe to all the topics you need to
+        rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size=5)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=5)
+        rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size=1)
+        
+
 
         self.loop()
 
@@ -94,11 +96,11 @@ class DBWNode(object):
     def dbw_enabled_cb(self, msg):
         self.dbw_enabled = msg
 
-    def twist_cb(self, msg):
+    def twist_cmd_cb(self, msg):
         self.linear_vel = msg.twist.linear.x
         self.angular_vel - msg.twist.angular.z 
         
-    def velocity_cb(self, msg) :
+    def current_velocity_cb(self, msg) :
         self.current_vel = msg. twist. linear.x
 
     
