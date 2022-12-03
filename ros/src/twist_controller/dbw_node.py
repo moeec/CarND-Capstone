@@ -98,7 +98,7 @@ class DBWNode(object):
 
     def twist_cmd_cb(self, msg):
         self.linear_vel = msg.twist.linear.x
-        self.angular_vel - msg.twist.angular.z 
+        self.angular_vel = msg.twist.angular.z 
         
     def current_velocity_cb(self, msg) :
         self.current_vel = msg. twist. linear.x
