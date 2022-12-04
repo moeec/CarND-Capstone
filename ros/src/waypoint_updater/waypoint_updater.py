@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+
 import rospy
 import math
 import tf
@@ -48,7 +49,7 @@ class WaypointUpdater(object):
     def loop(self):
         rate = rospy.Rate (50)
         while not rospy.is_shutdown():
-            If self.pose and self.base_lane:
+            if self.pose and self.base_lane:
                 self.publish_waypoints()
             rate.sleep ()
     
@@ -68,7 +69,7 @@ class WaypointUpdater(object):
         
         val = np.dot(cl_vect-prev_vect, pos_vect-cl_vect)
         
-        If val > 0:
+        if val > 0:
             closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
         return closest_idx      
             
@@ -106,7 +107,7 @@ class WaypointUpdater(object):
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
             temp.append (p)
             
-    return temp
+            return temp
 
     def pose_cb(self, msg):
         self.pose = msg
