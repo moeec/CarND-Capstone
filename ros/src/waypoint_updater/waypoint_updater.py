@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-
 import rospy
 import math
 import tf
@@ -140,7 +139,6 @@ class WaypointUpdater(object):
             dist += dl(waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position)
             wp1 = i
         return dist
-
 
 if __name__ == '__main__':
     try:
