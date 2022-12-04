@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import rospy
 from std_msgs.msg import Int32
 from geometry_msgs.msg import PoseStamped, Pose
@@ -154,7 +155,7 @@ class TLDetector(object):
                 line_wp_idx = temp_wp_idx
                 
                 if closest_light:
-                    state = self.get light state(closest_light)
+                    state = self.get_light_state(closest_light)
                     return line_wp_idx, state
                 return -1, TrafficLight.UNKNOWN
             if __name__ == '__main__':
