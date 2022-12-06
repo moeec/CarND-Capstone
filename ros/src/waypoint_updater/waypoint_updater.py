@@ -56,7 +56,7 @@ class WaypointUpdater(object):
         self.curr_velocity = 0
         self.red_light = None
         
-        self.loop
+        self.loop()
 
     def loop(self):
         rate = rospy.Rate (50)
