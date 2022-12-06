@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+#!/usr/bin/env python
 
 import rospy
 import math
@@ -6,6 +7,10 @@ import tf
 from geometry_msgs.msg import PoseStamped
 from styx_msgs.msg import Lane, Waypoint
 from std_msgs.msg import Int32
+import numpy as np
+from scipy.spatial import KDTree
+
+import math
 
 '''
 This node will publish waypoints from the car's current position to some `x` distance ahead.
@@ -32,6 +37,7 @@ class WaypointUpdater(object):
         self.base_lane = None
         self.pose = None
         self.stopline_wp_idx = -1
+        self.base_waypoints = None
         self.waypoints_2d = None
         self.waypoint_tree = None     
 
@@ -48,14 +54,16 @@ class WaypointUpdater(object):
     def loop(self):
         rate = rospy.Rate (50)
         while not rospy.is_shutdown():
-            if self.pose and self.base_lane:
-                self.publish_waypoints()
+            if self.pose and self.base_waypoints:
+                # Get Closest Waypoint
+                closest_waypoint_idx = self.get_closest_waypoint_idx()
+                self.publish_waypoints(closest_waypoint_idx)
             rate.sleep ()
     
-    def get_closest_waypoint_1dx(self):
+    def get_closest_waypoint_id(self):
         x = self.pose.pose.position.x
         y = self.pose.pose.position.y
-        closest_1dx = self.waypoint_tree.query ([x, y], 1)[1]
+        closest_idx = self.waypoint_tree.query ([x, y], 1)[1]
         
         # Check if closest is ahead or behind vehicle
         closest_coord = self.waypoints_2d[closest_idx] 
@@ -72,9 +80,12 @@ class WaypointUpdater(object):
             closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
         return closest_idx      
             
-    def publish_waypoints(self):
-        final_lane = self.generate_lane()
-        self.final_waypoints_pub.publish(final_lane)
+    def publish_waypoints(self, closest_idx):
+        lane = Lane()
+        lane.header = self.base_waypoints.header
+        lane.waypoints = self.base_waypoints.waypoints[closest_idx:closest_idx + LOOKAHEAD_WPS]
+        #final_lane = self.generate_lane()
+        self.final_waypoints_pub.publish(lane)
         
     def generate_lane (self):
         lane = Lane()
@@ -106,13 +117,13 @@ class WaypointUpdater(object):
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
             temp.append (p)
             
-            return temp
+        return temp
 
     def pose_cb(self, msg):
         self.pose = msg
 
     def waypoints_cb(self, waypoints):
-        self.base_lane = waypoints
+        self.base_waypoints = waypoints
         if not self.waypoints_2d:
             self.waypoints_2d = [[waypoint.pose.pose.position.x, waypoint.pose.pose.position.y] for waypoint in waypoints.waypoints]       
             self.waypoint_tree = KDTree(self.waypoints_2d)
@@ -139,6 +150,7 @@ class WaypointUpdater(object):
             dist += dl(waypoints[wp1].pose.pose.position, waypoints[i].pose.pose.position)
             wp1 = i
         return dist
+
 
 if __name__ == '__main__':
     try:
