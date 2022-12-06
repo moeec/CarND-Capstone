@@ -5,6 +5,7 @@ import rospy
 import math
 import tf
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import TwistStamped
 from styx_msgs.msg import Lane, Waypoint
 from std_msgs.msg import Int32
 import numpy as np
@@ -39,10 +40,13 @@ class WaypointUpdater(object):
         self.stopline_wp_idx = -1
         self.base_waypoints = None
         self.waypoints_2d = None
-        self.waypoint_tree = None     
+        self.waypoint_tree = None
+        self.curr_velocity = None
+        
 
         rospy.Subscriber('/current_pose', PoseStamped, self.pose_cb, queue_size=1)
         rospy.Subscriber('/base_waypoints', Lane, self.waypoints_cb, queue_size=1)
+        rospy.Subscriber('/current_velocity', TwistStamped, self.velocity_cb, queue_size=1)
 
         # TODO: Add a subscriber for /traffic_waypoint and /obstacle_waypoint below        
         rospy.Subscriber('/traffic_waypoint', Int32, self.traffic_cb, queue_size=1)
@@ -54,13 +58,13 @@ class WaypointUpdater(object):
     def loop(self):
         rate = rospy.Rate (50)
         while not rospy.is_shutdown():
-            if self.pose and self.base_waypoints:
+            if self.pose and self.base_waypoints and self.waypoint_tree:
                 # Get Closest Waypoint
-                closest_waypoint_idx = self.get_closest_waypoint_idx()
-                self.publish_waypoints(closest_waypoint_idx)
+                # closest_waypoint_idx = self.get_closest_waypoint_idx()
+                self.publish_waypoints()
             rate.sleep ()
     
-    def get_closest_waypoint_id(self):
+    def get_closest_waypoint_idx(self):
         x = self.pose.pose.position.x
         y = self.pose.pose.position.y
         closest_idx = self.waypoint_tree.query ([x, y], 1)[1]
@@ -78,14 +82,15 @@ class WaypointUpdater(object):
         
         if val > 0:
             closest_idx = (closest_idx + 1) % len(self.waypoints_2d)
+        
         return closest_idx      
             
     def publish_waypoints(self, closest_idx):
-        lane = Lane()
-        lane.header = self.base_waypoints.header
-        lane.waypoints = self.base_waypoints.waypoints[closest_idx:closest_idx + LOOKAHEAD_WPS]
-        #final_lane = self.generate_lane()
-        self.final_waypoints_pub.publish(lane)
+        #lane = Lane()
+        #lane.header = self.base_waypoints.header
+        #lane.waypoints = self.base_waypoints.waypoints[closest_idx:closest_idx + LOOKAHEAD_WPS]
+        final_lane = self.generate_lane()
+        self.final_waypoints_pub.publish(final_lane)
         
     def generate_lane (self):
         lane = Lane()
@@ -96,10 +101,13 @@ class WaypointUpdater(object):
         
         if self.stopline_wp_idx == -1 or (self.stopline_wp_idx >= farthest_idx):
             lane.waypoints = base_waypoints
+            
         else:
             lane.waypoints = self.decelerate_waypoints(base_waypoints, closest_idx)
         
         return lane
+   
+    
     
     def decelerate_waypoints(self, waypoints, closest_idx):
         temp = []
@@ -115,13 +123,17 @@ class WaypointUpdater(object):
                 vel = 0.
                 
             p.twist.twist.linear.x = min(vel, wp.twist.twist.linear.x)
-            temp.append (p)
+            temp.append (p) 
             
         return temp
 
     def pose_cb(self, msg):
         self.pose = msg
+    
+    def velocity_cb(self, msg):
+        self.curr_velocity = msg.twist.linear.x
 
+    
     def waypoints_cb(self, waypoints):
         self.base_waypoints = waypoints
         if not self.waypoints_2d:
@@ -151,7 +163,11 @@ class WaypointUpdater(object):
             wp1 = i
         return dist
 
-
+    def distance_wpoint(self, p1, p2):
+        x, y, z = p1.x - p2.x, p1.y - p2.y, p1.z - p2.z
+        return math.sqrt(x*x + y*y + z*z)
+        
+        
 if __name__ == '__main__':
     try:
         WaypointUpdater()
