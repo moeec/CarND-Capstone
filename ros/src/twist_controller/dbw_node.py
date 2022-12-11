@@ -50,31 +50,25 @@ class DBWNode(object):
         # Get TimeStamp from previous run.
         self.previous_timestamp = rospy.get_time()
 
-        # Proposed State
-        self.dbw_enabled = False
-        self.proposed_angular_velocity = 0.
-        self.proposed_linear_velocity = 0.
 
-        # Current State
-        self.current_angular_velocity = 0.
-        self.current_linear_velocity = 0.
-        
-        self.current_velocity = None
-        
-        self.linear_velocity = None
-        self.angular_velocity = None
-        self.throttle = self.steering = self.brake = 0
 
         # TODO: Create `Controller` object
         self.controller = Controller(vehicle_mass, fuel_capacity, brake_deadband, decel_limit, accel_limit, wheel_radius, wheel_base, steer_ratio, max_lat_accel, max_steer_angle)
-                
+        
 
         # TODO: Subscribe to all the topics you need to
         rospy.Subscriber('/twist_cmd', TwistStamped, self.twist_cmd_cb, queue_size=5)
         rospy.Subscriber('/current_velocity', TwistStamped, self.current_velocity_cb, queue_size=5)
         rospy.Subscriber('/vehicle/dbw_enabled', Bool, self.dbw_enabled_cb, queue_size=1)
-        
 
+        
+        self.current_velocity = None
+        
+        self.dbw_enabled = None
+        self.linear_velocity = self.current_angular_velocity = None
+        self.angular_velocity = None
+        self.throttle = self.steering = self.brake = 0
+                  
         self.loop()
 
     def loop(self):
@@ -92,11 +86,11 @@ class DBWNode(object):
         self.dbw_enabled = msg
 
     def twist_cmd_cb(self, msg):
-        self.linear_vel = msg.twist.linear.x
-        self.angular_vel = msg.twist.angular.z 
+        self.linear_velocity = msg.twist.linear.x
+        self.angular_velocity = msg.twist.angular.z 
         
     def current_velocity_cb(self, msg) :
-        self.current_vel = msg. twist. linear.x
+        self.current_velocity = msg. twist. linear.x
 
     
     def publish(self, throttle, brake, steer):
