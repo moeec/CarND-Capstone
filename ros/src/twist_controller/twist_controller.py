@@ -35,7 +35,7 @@ class Controller(object):
         
         self.last_time = rospy.get_time()
 
-    def control(self, current_vel, dbw_enabled, linear_vel, angular_vel):
+    def control(self, current_velocity, dbw_enabled, linear_velocity, angular_velocity):
         # TODO: Change the arg, kwarg list to suit your needs
         # Return throttle, brake, steer
         
@@ -43,12 +43,12 @@ class Controller(object):
             self.throttle_controller.reset() 
             return 0., 0., 0.
         
-        current_vel = self.vel_lpf.filt(current_vel)
+        current_velocity = self.vel_lpf.filt(current_velocity)
         
-        steering = self.yaw_controller.get_steering (linear_vel, angular_vel, current_vel)
+        steering = self.yaw_controller.get_steering(linear_velocity, angular_velocity, current_velocity)  
         
-        vel_error = linear_vel - current_vel
-        self.last_vel = current_vel
+        vel_error = linear_velocity - current_velocity
+        self.last_vel = current_velocity
         
         current_time = rospy.get_time()
         sample_time = current_time - self.last_time
@@ -57,7 +57,7 @@ class Controller(object):
         throttle = self.throttle_controller.step(vel_error, sample_time)
         brake = 0
         
-        if linear_vel == 0. and current_vel < 0.1:
+        if linear_velocity == 0. and current_velocity < 0.1:
             throttle = 0
             brake = 400 #N*m - to hold the car in place if we are stopped at a light. Acceleration - 1m/s^2
             
